@@ -1,9 +1,22 @@
 import express, { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { verifyJwt } from "@fortanetwork/forta-bot";
+import Redis from "ioredis";
+import dotenv from "dotenv";
+
+// Initialize environment variables
+dotenv.config();
 
 const app = express();
 const router = express.Router();
+app.use(express.json()); // For parsing application/json
+
+// Initialize Redis client
+const redis = new Redis({
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT!),
+    password: process.env.REDIS_PASSWORD,
+});
 
 // Middleware to validate JWT
 const validateJwtMiddleware = async (request: Request, response: Response, next: NextFunction) => {
@@ -38,15 +51,65 @@ const validateJwtMiddleware = async (request: Request, response: Response, next:
 // Apply the JWT validation middleware to all routes
 app.use(validateJwtMiddleware);
 
-// Example endpoint
-router.get('/example-endpoint', async (request: Request, response: Response) => {
-    // Assuming token is valid at this point
-    // Fetch data from the database and return it in the response
-    response.json({ data: "This is a protected resource" });
+// Get a secret from environment variables
+router.get('/secret', async (request: Request, response: Response) => {
+    try {
+        const secretKey = request.query.key as string;
+        if (!secretKey) {
+            return response.status(400).json({ error: "No key provided" });
+        }
+
+        const secret = process.env[`SECRET_${secretKey.toUpperCase()}`];
+        if (secret) {
+            response.json({ data: secret });
+        } else {
+            response.status(404).json({ error: "Secret not found" });
+        }
+    } catch (error) {
+        response.status(500).json({ error: "Server error" });
+    }
 });
 
+// Get something from the store given a key
+router.get('/store', async (request: Request, response: Response) => {
+    try {
+        const key = request.query.key as string;
+        if (!key) {
+            return response.status(400).json({ error: "No key provided" });
+        }
+
+        const value = await redis.get(key);
+        if (value) {
+            response.json({ data: value });
+        } else {
+            response.status(404).json({ error: "Key not found" });
+        }
+    } catch (error) {
+        response.status(500).json({ error: "Server error" });
+    }
+});
+
+// Update the store given a key
+router.post('/store', async (request: Request, response: Response) => {
+    try {
+        const key = request.body.key;
+        const value = request.body.value;
+
+        if (!key || !value) {
+            return response.status(400).json({ error: "Key and value are required" });
+        }
+
+        await redis.set(key, value);
+        response.json({ data: `Key ${key} updated successfully` });
+    } catch (error) {
+        response.status(500).json({ error: "Server error" });
+    }
+});
+
+// Apply routes
 app.use("/", router);
 
 app.listen(8080, () => {
     console.log(`Server started on port 8080`);
 });
+
