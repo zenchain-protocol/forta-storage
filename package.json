@@ -1,0 +1,44 @@
+{
+  "name": "forta-storage",
+  "version": "0.0.1",
+  "description": "A secrets management API for Forta bots, enabling secure storage and retrieval using JWT tokens.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenchain-protocol/forta-storage.git"
+  },
+  "keywords": [
+    "Forta",
+    "secrets",
+    "JWT",
+    "API",
+    "key-value",
+    "storage",
+    "secure",
+    "management"
+  ],
+  "author": "@benefacto",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/zenchain-protocol/forta-storage/issues"
+  },
+  "homepage": "https://github.com/zenchain-protocol/forta-storage#readme",
+  "dependencies": {
+    "@fortanetwork/forta-bot": "^0.2.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.4.5",
+    "tsc-watch": "^6.0.0"
+  }
+}
