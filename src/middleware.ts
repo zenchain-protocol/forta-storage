@@ -21,7 +21,7 @@ export const validateJwtMiddleware = async (request: Request, response: Response
             return response.status(500).json({ error: "Failed to authenticate token" });
         }
     } else {
-        console.warn(`No JWT validation for environment: ${process.env.NODE_ENV}`)
+        console.warn(`No JWT validation for environment ${process.env.NODE_ENV} for request URL ${request.url}`)
     }
     next();
 };

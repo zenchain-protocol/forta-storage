@@ -16,6 +16,9 @@ const redis = new Redis({
     password: process.env.REDIS_PASSWORD,
 });
 
+// Apply JWT validation middleware to all routes
+app.use(validateJwtMiddleware);
+
 // Routes
 /**
  * @swagger
@@ -153,8 +156,8 @@ app.post('/store', async (request: Request, response: Response) => {
     }
 });
 
+// Serve Swagger docs
 app.use(swaggerUi.serve);
-app.use('/', validateJwtMiddleware);
 app.get('/', (_req, res) => {
   res.send(swaggerUi.generateHTML(swaggerDocs));
 });
