@@ -7,7 +7,7 @@ import { swaggerDocs } from "./swagger";
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const redis = new Redis({
@@ -158,13 +158,8 @@ app.post('/store', async (request: Request, response: Response) => {
         }
 
         const jsonString = JSON.stringify(value);
-
-        // Size limit check using environment variable
-        if (Buffer.byteLength(jsonString, 'utf8') > Number(process.env.MAX_JSON_SIZE)) {
-            console.error(`Value exceeds size limit of ${Number(process.env.MAX_JSON_SIZE) / (1024 * 1024)} MB: ${value.substring(0,100)}...`);
-            return response.status(400).json({ error: "Value is too large"});
-        }
-
+        // Note: Express has a default POST request body limit size of 100kb
+        // This is what's currently limiting the storage size
         await redis.set(key, jsonString);
         response.json({ data: `Key ${key} updated successfully` });
     } catch (error) {
