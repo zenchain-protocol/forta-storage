@@ -1,58 +1,53 @@
-import express, { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { verifyJwt } from "@fortanetwork/forta-bot";
+import express, { Request, Response } from "express";
 import Redis from "ioredis";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import { validateJwtMiddleware } from "./middleware";
+import { swaggerDocs } from "./swagger";
 
-// Initialize environment variables
 dotenv.config();
 
 const app = express();
-const router = express.Router();
-app.use(express.json()); // For parsing application/json
+app.use(express.json());
 
-// Initialize Redis client
 const redis = new Redis({
     host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT!),
+    port: parseInt(process.env.REDIS_PORT!, 10),
     password: process.env.REDIS_PASSWORD,
 });
 
-// Middleware to validate JWT
-const validateJwtMiddleware = async (request: Request, response: Response, next: NextFunction) => {
-    const token = request.headers["x-access-token"] as string;
-
-    if (!token) {
-        return response.status(401).json({ error: "No token provided" });
-    }
-
-    try {
-        if (process.env.NODE_ENV === 'production') {
-            // In production, use the verifyJwt function from Forta bot
-            const isValidJwt = await verifyJwt(token);
-
-            if (!isValidJwt) {
-                return response.status(401).json({ error: "Invalid token" });
-            }
-        } else {
-            // In development, just check if the token is a valid JWT format
-            jwt.verify(token, "dummySecretForDev", (err) => {
-                if (err) {
-                    return response.status(401).json({ error: "Invalid token" });
-                }
-            });
-        }
-        next(); // Proceed to the next middleware or route handler
-    } catch (error) {
-        return response.status(500).json({ error: "Failed to authenticate token" });
-    }
-};
-
-// Apply the JWT validation middleware to all routes
-app.use(validateJwtMiddleware);
-
-// Get a secret from environment variables
-router.get('/secret', async (request: Request, response: Response) => {
+// Routes
+/**
+ * @swagger
+ * /secret:
+ *   get:
+ *     summary: Retrieve a secret from environment variables
+ *     tags: [Secrets]
+ *     parameters:
+ *       - in: query
+ *         name: key
+ *         required: true
+ *         description: The key for the secret
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved secret
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: string
+ *       400:
+ *         description: No key provided
+ *       404:
+ *         description: Secret not found
+ *       500:
+ *         description: Server error
+ */
+app.get(`/secret`, async (request: Request, response: Response) => {
     try {
         const secretKey = request.query.key as string;
         if (!secretKey) {
@@ -70,8 +65,37 @@ router.get('/secret', async (request: Request, response: Response) => {
     }
 });
 
-// Get something from the store given a key
-router.get('/store', async (request: Request, response: Response) => {
+/**
+ * @swagger
+ * /store:
+ *   get:
+ *     summary: Retrieve a value from the store
+ *     tags: [Store]
+ *     parameters:
+ *       - in: query
+ *         name: key
+ *         required: true
+ *         description: The key for the store value
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved value
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: string
+ *       400:
+ *         description: No key provided
+ *       404:
+ *         description: Key not found
+ *       500:
+ *         description: Server error
+ */
+app.get('/store', async (request: Request, response: Response) => {
     try {
         const key = request.query.key as string;
         if (!key) {
@@ -89,11 +113,34 @@ router.get('/store', async (request: Request, response: Response) => {
     }
 });
 
-// Update the store given a key
-router.post('/store', async (request: Request, response: Response) => {
+/**
+ * @swagger
+ * /store:
+ *   post:
+ *     summary: Update the store with a new key-value pair
+ *     tags: [Store]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               key:
+ *                 type: string
+ *               value:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successfully updated key
+ *       400:
+ *         description: Key and value are required
+ *       500:
+ *         description: Server error
+ */
+app.post('/store', async (request: Request, response: Response) => {
     try {
-        const key = request.body.key;
-        const value = request.body.value;
+        const { key, value } = request.body;
 
         if (!key || !value) {
             return response.status(400).json({ error: "Key and value are required" });
@@ -106,10 +153,12 @@ router.post('/store', async (request: Request, response: Response) => {
     }
 });
 
-// Apply routes
-app.use("/", router);
+app.use(swaggerUi.serve);
+app.use('/', validateJwtMiddleware);
+app.get('/', (_req, res) => {
+  res.send(swaggerUi.generateHTML(swaggerDocs));
+});
 
 app.listen(8080, () => {
     console.log(`Server started on port 8080`);
 });
-

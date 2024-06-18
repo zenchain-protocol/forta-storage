@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: your_redis_password
+      NODE_ENV: development # or production, depending on what you want to test
+      SECRET_ZETTABLOCK_API_KEY: example_zettablock_api_key
+      SECRET_ZENCHAIN_API_KEY: exampler_zenchain_api_key
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    command: redis-server --requirepass your_redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

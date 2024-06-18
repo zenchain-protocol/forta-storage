@@ -1,12 +1,12 @@
 {
   "name": "forta-storage",
   "version": "0.0.1",
-  "description": "A secrets management API for Forta bots, enabling secure storage and retrieval using JWT tokens.",
+  "description": "An API providing secure secrets management and key-value storage for Forta bots using JWT.",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "prod": "node dist/index.js",
     "build": "tsc",
-    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
+    "start": "tsc-watch --onSuccess \"node dist/index.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -33,13 +33,15 @@
     "@fortanetwork/forta-bot": "^0.2.3",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "ioredis": "^5.4.1"
+    "ioredis": "^5.4.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.2",
-    "jsonwebtoken": "^9.0.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
     "ts-node": "^10.9.1",
     "tsc-watch": "^6.0.0",
     "typescript": "^5.4.5"
