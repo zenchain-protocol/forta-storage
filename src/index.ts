@@ -12,7 +12,7 @@ app.use(express.json());
 
 const redis = new Redis({
     host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT!, 10),
+    port: parseInt(process.env.REDIS_PORT!),
     password: process.env.REDIS_PASSWORD,
 });
 
@@ -22,20 +22,20 @@ app.use(validateJwtMiddleware);
 // Routes
 /**
  * @swagger
- * /secret:
+ * /value:
  *   get:
- *     summary: Retrieve a secret from environment variables
- *     tags: [Secrets]
+ *     summary: Retrieve a value from the environment
+ *     tags: [Values]
  *     parameters:
  *       - in: query
  *         name: key
  *         required: true
- *         description: The key for the secret
+ *         description: The key for the value
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Successfully retrieved secret
+ *         description: Successfully retrieved value
  *         content:
  *           application/json:
  *             schema:
@@ -46,24 +46,25 @@ app.use(validateJwtMiddleware);
  *       400:
  *         description: No key provided
  *       404:
- *         description: Secret not found
+ *         description: Value not found
  *       500:
  *         description: Server error
  */
-app.get(`/secret`, async (request: Request, response: Response) => {
+app.get(`/value`, async (request: Request, response: Response) => {
     try {
-        const secretKey = request.query.key as string;
-        if (!secretKey) {
-            return response.status(400).json({ error: "No key provided" });
+        const key = request.query.key as string;
+        if (!key) {
+            return response.status(400).json({ error: "Invalid key" });
         }
 
-        const secret = process.env[`SECRET_${secretKey.toUpperCase()}`];
+        const secret = process.env[`SECRET_${key.toUpperCase()}`];
         if (secret) {
             response.json({ data: secret });
         } else {
-            response.status(404).json({ error: "Secret not found" });
+            response.status(404).json({ error: "Not found" });
         }
     } catch (error) {
+        console.error(error)
         response.status(500).json({ error: "Server error" });
     }
 });
@@ -102,16 +103,18 @@ app.get('/store', async (request: Request, response: Response) => {
     try {
         const key = request.query.key as string;
         if (!key) {
-            return response.status(400).json({ error: "No key provided" });
+            return response.status(400).json({ error: "Invalid key" });
         }
 
         const value = await redis.get(key);
         if (value) {
-            response.json({ data: value });
+            const jsonValue = JSON.parse(value);
+            response.json({ data: jsonValue });
         } else {
-            response.status(404).json({ error: "Key not found" });
+            response.status(404).json({ error: "Not found" });
         }
     } catch (error) {
+        console.error(`Error retrieving key ${request.query.key}: ${error}`);
         response.status(500).json({ error: "Server error" });
     }
 });
@@ -146,10 +149,23 @@ app.post('/store', async (request: Request, response: Response) => {
         const { key, value } = request.body;
 
         if (!key || !value) {
-            return response.status(400).json({ error: "Key and value are required" });
+            return response.status(400).json({ error: "Invalid key" });
         }
 
-        await redis.set(key, value);
+        // Validate JSON format and limit size
+        if (typeof value !== 'object') {
+            return response.status(400).json({ error: "Value must be a JSON object" });
+        }
+
+        const jsonString = JSON.stringify(value);
+
+        // Size limit check using environment variable
+        if (Buffer.byteLength(jsonString, 'utf8') > Number(process.env.MAX_JSON_SIZE)) {
+            console.error(`Value exceeds size limit of ${Number(process.env.MAX_JSON_SIZE) / (1024 * 1024)} MB: ${value.substring(0,100)}...`);
+            return response.status(400).json({ error: "Value is too large"});
+        }
+
+        await redis.set(key, jsonString);
         response.json({ data: `Key ${key} updated successfully` });
     } catch (error) {
         response.status(500).json({ error: "Server error" });
@@ -162,6 +178,6 @@ app.get('/', (_req, res) => {
   res.send(swaggerUi.generateHTML(swaggerDocs));
 });
 
-app.listen(8080, () => {
-    console.log(`Server started on port 8080`);
+app.listen(process.env.NODE_PORT, () => {
+    console.log(`Server started on port ${process.env.NODE_PORT}`);
 });
