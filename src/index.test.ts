@@ -6,10 +6,6 @@ dotenv.config();
 
 
 describe('API tests', () => {
-    beforeAll(async () => {
-        process.env.SECRET_TEST_KEY = 'test_value';
-    })
-
     afterAll(async () => {
         server.close();
         await redis.quit();
@@ -23,13 +19,14 @@ describe('API tests', () => {
         });
 
         it('should return 404 if key is not found', async () => {
-            const response = await request(app).get('/value').query({ key: 'NON_EXISTENT_KEY' });
+            const response = await request(app).get('/value').query({ key: 'no_key' });
             expect(response.status).toBe(404);
             expect(response.body.error).toBe('Not found');
         });
 
         it('should return the value for a valid key', async () => {
-            const response = await request(app).get('/value').query({ key: 'TEST_KEY' });
+            process.env.VALUE_TEST_KEY = 'test_value';
+            const response = await request(app).get('/value').query({ key: 'test_key' });
             expect(response.status).toBe(200);
             expect(response.body.data).toBe('test_value');
         });
@@ -43,7 +40,7 @@ describe('API tests', () => {
         });
 
         it('should return 404 if key is not found', async () => {
-            const response = await request(app).get('/store').query({ key: 'NON_EXISTENT_KEY' });
+            const response = await request(app).get('/store').query({ key: 'no_key' });
             expect(response.status).toBe(404);
             expect(response.body.error).toBe('Not found');
         });

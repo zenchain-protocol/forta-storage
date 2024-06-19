@@ -16,7 +16,7 @@ To run the application locally with Docker Compose, follow these steps:
 2. **Start the services**:
     ```bash
     docker-compose up -d api
-    ```
+    ``
 
 3. **Run the test runner**:
     ```bash
@@ -47,17 +47,17 @@ To run the application directly on your local machine using Node.js and a local 
     ## API KEYS
 
     # Required
-    SECRET_ZETTABLOCK_API_KEY=
-    SECRET_ZENCHAIN_API_KEY=
+    VALUE_ZETTABLOCK_API_KEY=
+    VALUE_ZENCHAIN_API_KEY=
 
     # Optional, to support all chains
-    SECRET_ETHERSCAN_API_KEY=
-    SECRET_OPTIMISTIC_API_KEY=
-    SECRET_BSCSCAN_API_KEY=
-    SECRET_POLYGONSCAN_API_KEY=
-    SECRET_FANTOMSCAN_API_KEY=
-    SECRET_ARBISCAN_API_KEY=
-    SECRET_SNOWTRACE_API_KEY=
+    VALUE_ETHERSCAN_API_KEY=
+    VALUE_OPTIMISTIC_API_KEY=
+    VALUE_BSCSCAN_API_KEY=
+    VALUE_POLYGONSCAN_API_KEY=
+    VALUE_FANTOMSCAN_API_KEY=
+    VALUE_ARBISCAN_API_KEY=
+    VALUE_SNOWTRACE_API_KEY=
     ```
 
 3. **Install dependencies**:
@@ -71,3 +71,7 @@ To run the application directly on your local machine using Node.js and a local 
     ```
 
 Make sure you have a local Redis instance running with the same configurations as specified in the `.env` file.
+
+### Swagger Documentation
+
+Swagger documentation is available at `http://localhost:NODE_PORT` after starting the application. You can use this documentation to explore and test the API endpoints interactively.

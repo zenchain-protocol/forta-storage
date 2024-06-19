@@ -57,7 +57,7 @@ app.get(`/value`, async (request: Request, response: Response) => {
             return response.status(400).json({ error: "Invalid key" });
         }
 
-        const secret = process.env[`SECRET_${key.toUpperCase()}`];
+        const secret = process.env[`VALUE_${key.toUpperCase().trim()}`];
         if (secret) {
             response.json({ data: secret });
         } else {
@@ -106,7 +106,7 @@ app.get('/store', async (request: Request, response: Response) => {
             return response.status(400).json({ error: "Invalid key" });
         }
 
-        const value = await redis.get(key);
+        const value = await redis.get(key.toLowerCase().trim());
         if (value) {
             response.json({ data: value });
         } else {
@@ -159,7 +159,7 @@ app.post('/store', async (request: Request, response: Response) => {
         // Note: Express has a default POST request body limit size of 100kb
         // This is what's currently limiting the storage size
         const jsonString = JSON.stringify(value);
-        await redis.set(key, jsonString);
+        await redis.set(String(key).toLowerCase().trim(), jsonString);
         response.json({ data: `Key ${key} updated successfully` });
     } catch (error) {
         console.error(`Error storing key ${JSON.stringify(key)} value ${JSON.stringify(value)}: ${error}`);
