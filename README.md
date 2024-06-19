@@ -1,4 +1,5 @@
 # forta-storage
+
 An API providing key-value storage for Forta bots using JWT.
 
 ## Running Locally
@@ -9,12 +10,17 @@ To run the application locally with Docker Compose, follow these steps:
 
 1. **Build the Docker images**:
     ```bash
-    docker-compose build
+    docker-compose build --build-arg INSTALL_DEV=true
     ```
 
 2. **Start the services**:
     ```bash
-    docker-compose up
+    docker-compose up -d api
+    ```
+
+3. **Run the test runner**:
+    ```bash
+    docker-compose run --rm test-runner
     ```
 
 ### Using Node.js and Local Redis

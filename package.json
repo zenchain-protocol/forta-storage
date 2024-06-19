@@ -7,7 +7,7 @@
     "prod": "node dist/index.js",
     "build": "tsc",
     "start": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "test": "jest --silent"
+    "test": "jest --silent --detectOpenHandles"
   },
   "jest": {
     "preset": "ts-jest",
@@ -36,11 +36,9 @@
   "homepage": "https://github.com/zenchain-protocol/forta-storage#readme",
   "dependencies": {
     "@fortanetwork/forta-bot": "^0.2.3",
-    "@types/ioredis-mock": "^8.2.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
-    "ioredis-mock": "^8.9.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },

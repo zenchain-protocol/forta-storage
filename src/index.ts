@@ -10,7 +10,7 @@ dotenv.config();
 export const app = express();
 app.use(express.json());
 
-const redis = new Redis({
+export const redis = new Redis({
     host: process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT!),
     password: process.env.REDIS_PASSWORD,
@@ -108,8 +108,7 @@ app.get('/store', async (request: Request, response: Response) => {
 
         const value = await redis.get(key);
         if (value) {
-            const jsonValue = JSON.parse(value);
-            response.json({ data: jsonValue });
+            response.json({ data: value });
         } else {
             response.status(404).json({ error: "Not found" });
         }
@@ -145,24 +144,25 @@ app.get('/store', async (request: Request, response: Response) => {
  *         description: Server error
  */
 app.post('/store', async (request: Request, response: Response) => {
+    const { key, value } = request.body;
+
+    if (!key || !value) {
+        return response.status(400).json({ error: "Invalid key" });
+    }
+
     try {
-        const { key, value } = request.body;
-
-        if (!key || !value) {
-            return response.status(400).json({ error: "Invalid key" });
-        }
-
         // Validate JSON format and limit size
         if (typeof value !== 'object') {
             return response.status(400).json({ error: "Value must be a JSON object" });
         }
 
-        const jsonString = JSON.stringify(value);
         // Note: Express has a default POST request body limit size of 100kb
         // This is what's currently limiting the storage size
+        const jsonString = JSON.stringify(value);
         await redis.set(key, jsonString);
         response.json({ data: `Key ${key} updated successfully` });
     } catch (error) {
+        console.error(`Error storing key ${JSON.stringify(key)} value ${JSON.stringify(value)}: ${error}`);
         response.status(500).json({ error: "Server error" });
     }
 });
@@ -170,9 +170,9 @@ app.post('/store', async (request: Request, response: Response) => {
 // Serve Swagger docs
 app.use(swaggerUi.serve);
 app.get('/', (_req, res) => {
-  res.send(swaggerUi.generateHTML(swaggerDocs));
+    res.send(swaggerUi.generateHTML(swaggerDocs));
 });
 
-app.listen(process.env.NODE_PORT, () => {
+export const server = app.listen(process.env.NODE_PORT, () => {
     console.log(`Server started on port ${process.env.NODE_PORT}`);
 });
