@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import request from 'supertest';
-import 'ioredis-mock';
 import { app, redis, server } from '.';
 
 dotenv.config();
@@ -43,8 +42,6 @@ describe('API tests', () => {
             expect(response.body.error).toBe('Invalid key');
         });
 
-        // TODO: Fix this, this test fails even though functionality works
-        // It must be an issue with the mocking
         it('should return 404 if key is not found', async () => {
             const response = await request(app).get('/store').query({ key: 'NON_EXISTENT_KEY' });
             expect(response.status).toBe(404);
