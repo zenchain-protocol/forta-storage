@@ -13,11 +13,13 @@ app.use(express.json());
 export const redis = new Redis({
     host: process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT!),
+    username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
 });
 
-// Apply JWT validation middleware to all routes
-app.use(validateJwtMiddleware);
+// Apply JWT validation middleware to all routes that need it
+app.use('/value', validateJwtMiddleware);
+app.use('/store', validateJwtMiddleware);
 
 // Routes
 /**
