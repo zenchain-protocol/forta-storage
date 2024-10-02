@@ -176,8 +176,8 @@ app.get('/', (_req, res) => {
     res.send(swaggerUi.generateHTML(swaggerDocs));
 });
 
-export const server = app.listen(process.env.NODE_PORT, () => {
-    console.log(`Server started on port ${process.env.NODE_PORT}`);
+export const server = app.listen(process.env.PORT ?? process.env.NODE_PORT, () => {
+    console.log(`Server started on port ${process.env.PORT ?? process.env.NODE_PORT}`);
 });
 
 export default app;
