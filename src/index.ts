@@ -176,3 +176,8 @@ app.get('/', (_req, res) => {
 export const server = app.listen(process.env.NODE_PORT, () => {
     console.log(`Server started on port ${process.env.NODE_PORT}`);
 });
+
+app.listen(process.env.NODE_PORT, () => {
+    console.log(`Server started on port ${process.env.NODE_PORT}`);
+});
+module.exports = app;
