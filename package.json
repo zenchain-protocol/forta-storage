@@ -37,7 +37,7 @@
   "dependencies": {
     "@fortanetwork/forta-bot": "^0.2.3",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "express": "^4.21.1",
     "ioredis": "^5.4.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
