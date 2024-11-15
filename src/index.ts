@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import rateLimit from "express-rate-limit";
 import Redis from "ioredis";
 import dotenv from "dotenv";
 import swaggerUi from "swagger-ui-express";
@@ -18,9 +19,15 @@ export const redis = process.env.NODE_ENV === 'production'
     password: process.env.REDIS_PASSWORD,
 });
 
-// Apply JWT validation middleware to all routes that need it
-app.use('/value', validateJwtMiddleware);
-app.use('/store', validateJwtMiddleware);
+// Rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
+// Apply JWT validation middleware and rate limiter to all routes that need it
+app.use('/value', limiter, validateJwtMiddleware);
+app.use('/store', limiter, validateJwtMiddleware);
 
 // Routes
 /**
