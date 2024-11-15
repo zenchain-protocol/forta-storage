@@ -10,14 +10,17 @@ dotenv.config();
 export const app = express();
 app.use(express.json());
 
-export const redis = new Redis({
+export const redis = process.env.NODE_ENV === 'production'
+  ? new Redis(process.env.REDIS_URL ?? '')
+  : new Redis({
     host: process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT!),
     password: process.env.REDIS_PASSWORD,
 });
 
-// Apply JWT validation middleware to all routes
-app.use(validateJwtMiddleware);
+// Apply JWT validation middleware to all routes that need it
+app.use('/value', validateJwtMiddleware);
+app.use('/store', validateJwtMiddleware);
 
 // Routes
 /**
@@ -173,6 +176,8 @@ app.get('/', (_req, res) => {
     res.send(swaggerUi.generateHTML(swaggerDocs));
 });
 
-export const server = app.listen(process.env.NODE_PORT, () => {
-    console.log(`Server started on port ${process.env.NODE_PORT}`);
+export const server = app.listen(process.env.PORT ?? process.env.NODE_PORT, () => {
+    console.log(`Server started on port ${process.env.PORT ?? process.env.NODE_PORT}`);
 });
+
+export default app;
